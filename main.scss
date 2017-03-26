@@ -1,0 +1,158 @@
+$font-stack:    "Futura", "Calibri",  serif;
+
+
+$bg-color: #E8E9EB;
+
+
+$color-ball-1: #FFFFFF;
+$color-ball-2: #B3B3B5;
+
+$stroke-width-sprites: 1.5; 
+
+
+// SASS style sheet */
+// Palette color codes */
+// Palette URL: http://paletton.com/#uid=73u0D0km6p2czAJhUt9pOl4uxg8 */
+
+// Feel free to copy&paste color codes to your application */
+
+
+// As hex codes */
+
+$color-primary-0: #2C607F;	// Main Primary color */
+$color-primary-1: #719AB3;
+$color-primary-2: #467794;
+$color-primary-3: #1A4D6B;
+$color-primary-4: #083652;
+
+$color-secondary-1-0: #42378A;	// Main Secondary color (1) */
+$color-secondary-1-1: #867EBF;
+$color-secondary-1-2: #5C53A1;
+$color-secondary-1-3: #2D2375;
+$color-secondary-1-4: #180F59;
+
+$color-secondary-2-0: #C8AA3E;	// Main Secondary color (2) */
+$color-secondary-2-1: #FFEA9B;
+$color-secondary-2-2: #E8CD66;
+$color-secondary-2-3: #A88B21;
+$color-secondary-2-4: #816606;
+
+$color-complement-0: #C88A3E;	// Main Complement color */
+$color-complement-1: #FFD29B;
+$color-complement-2: #E8AE66;
+$color-complement-3: #A86B21;
+$color-complement-4: #814906;
+
+
+
+// As RGBa codes */
+
+$rgba-primary-0: rgba( 44, 96,127,1);	// Main Primary color */
+$rgba-primary-1: rgba(113,154,179,1);
+$rgba-primary-2: rgba( 70,119,148,1);
+$rgba-primary-3: rgba( 26, 77,107,1);
+$rgba-primary-4: rgba(  8, 54, 82,1);
+
+$rgba-secondary-1-0: rgba( 66, 55,138,1);	// Main Secondary color (1) */
+$rgba-secondary-1-1: rgba(134,126,191,1);
+$rgba-secondary-1-2: rgba( 92, 83,161,1);
+$rgba-secondary-1-3: rgba( 45, 35,117,1);
+$rgba-secondary-1-4: rgba( 24, 15, 89,1);
+
+$rgba-secondary-2-0: rgba(200,170, 62,1);	// Main Secondary color (2) */
+$rgba-secondary-2-1: rgba(255,234,155,1);
+$rgba-secondary-2-2: rgba(232,205,102,1);
+$rgba-secondary-2-3: rgba(168,139, 33,1);
+$rgba-secondary-2-4: rgba(129,102,  6,1);
+
+$rgba-complement-0: rgba(200,138, 62,1);	// Main Complement color */
+$rgba-complement-1: rgba(255,210,155,1);
+$rgba-complement-2: rgba(232,174,102,1);
+$rgba-complement-3: rgba(168,107, 33,1);
+$rgba-complement-4: rgba(129, 73,  6,1);
+
+
+
+
+.game-svg {
+    display: block;
+    margin: auto;
+    background: $bg-color;
+}
+
+.game-background {
+    opacity: 0.0;
+    cursor: crosshair;
+}
+
+.peg {
+    stroke-width: $stroke-width-sprites;
+    fill: $color-primary-2;
+    stroke:  $color-primary-3;
+    pointer-events: none;
+}
+
+
+.peg.redPeg {
+    fill: $color-complement-2;
+}
+
+
+.peg.hit, .peg.redPeg.hit, .peg.multiBallPeg.hit {
+    fill: $color-secondary-2-1;
+}
+
+.peg.multiBallPeg {
+    fill: $color-secondary-2-4;
+}
+
+.ball {
+    stroke-width: $stroke-width-sprites;
+    fill: $color-ball-1;
+    stroke: $color-ball-2;
+}
+
+
+.gunbase {
+    fill: $rgba-secondary-1-4;
+}
+
+.gunbarrel {
+    fill: $rgba-secondary-1-2;
+}
+
+
+.wall {
+    stroke-width: 0.0;
+    fill: $rgba-secondary-1-4;
+}
+
+
+.score-text {
+  fill: $color-complement-4;
+  font-family: $font-stack;
+  font-size: 10px;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+.bonus-popup {
+  fill: $color-complement-4;
+  font-family: $font-stack;
+  font-size: 20px;
+  pointer-events: none;
+}
+
+.game-text {
+  stroke-width: 1.0;
+  stroke: #064669;
+  fill: #E8EAE9;
+  font-family: $font-stack;
+  font-size: 25px;
+  pointer-events: none;
+}
+
+
+.bucket {
+  fill: $rgba-secondary-1-1;
+}
