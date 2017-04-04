@@ -11,7 +11,7 @@ import Svg.Attributes exposing (..)
 import Svg.Events exposing (..)
 import Types exposing (..)
 import VectorHelpers exposing (..)
-
+import SvgHelpers exposing (..)
 --import Mouse exposing (Position)
 
 
@@ -226,19 +226,37 @@ svgBallsLeft ballsLeft =
         ]
 
 
-svgGameOver : Float -> Svg a
+svgGameOver : Float -> Svg Msg
 svgGameOver backgroundTextOpacity =
-    Svg.text_
-        [ y "150"
-        , class "game-text"
-        , fontSize "80"
-        , strokeOpacity (toString backgroundTextOpacity)
-        ]
-        (List.map svgGameTextLine
-            [ "GAME"
-            , "OVER"
-            ]
-        )
+   let
+      rectWidth = 200
+      rectLeft = (Bounds.gameX - rectWidth) / 2
+   in
+     Svg.g [
+       --transform  (tfm [ (Translate rectLeft 0) ])
+     ] [
+       rect
+           [
+            Svg.Attributes.fill  "black"
+           , fillOpacity  "0.9"
+           , width (toString Bounds.gameX)
+           , height (toString Bounds.gameY)
+           , Svg.Events.onClick PlayAgain
+           ][]
+        ,
+        Svg.text_
+         [
+          class "game-text"
+          , y (toString ((Bounds.gameY / 2) - 60))
+         , strokeOpacity (toString backgroundTextOpacity)
+         ]
+           (
+              List.map svgGameTextLine [ "GAME", "OVER" ]
+            )
+      ]
+
+
+
 
 
 gameDimensions : Int -> Int -> ( Svg.Attribute msg, Float )
@@ -275,34 +293,6 @@ getYStr =
     getY >> toString
 
 
-type SvgTransforms
-    = Rotate Float Float Float
-      -- rotate in degrees
-    | Translate Float Float
-    | Scale Float
-
-
-tostr : SvgTransforms -> String
-tostr tfm =
-    case tfm of
-        Rotate degree x y ->
-            "rotate(" ++ toString degree ++ " " ++ toString x ++ " " ++ toString y ++ ")"
-
-        Translate x y ->
-            "translate(" ++ toString x ++ " " ++ toString y ++ ")"
-
-        Scale scale ->
-            "scale(" ++ (toString scale) ++ ")"
-
-
-tfm : List SvgTransforms -> String
-tfm transforms =
-    join "," (List.map tostr transforms)
-
-
-translateVec2 : Vec2 -> SvgTransforms
-translateVec2 pos =
-    Translate (getX pos) (getY pos)
 
 
 getClickPos : Json.Decoder ( Int, Int )

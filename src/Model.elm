@@ -31,6 +31,7 @@ scoreMarkerFloatSpeed =
     0.05
 
 longShotThreshold = 300
+ballsPerLevel = 10
 
 physicsLens : Lens { b | physics : Physics } Physics
 physicsLens =
@@ -65,7 +66,7 @@ resetToLevel ls model =
     , gameState = Aiming
     , balls = []
     , scoreMarkers = []
-    , ballsLeft = model.ballsLeft + 10
+    , ballsLeft = model.ballsLeft + ballsPerLevel
   }
 
 initial : Model
@@ -142,8 +143,13 @@ update action model =
                           ( model, Cmd.none )
 
               GameOver ->
-                  ( model, Cmd.none )
+                      case action of
+                          PlayAgain ->
+                              ( { initial | windowWidth = model.windowWidth, windowHeight = model.windowHeight } ,
+                                     Cmd.none)
 
+                          _ ->
+                              ( model, Cmd.none )
 
 
 

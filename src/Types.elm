@@ -61,6 +61,7 @@ type Msg
     | SweepUp
     | WindowResize Window.Size
     | KeyDown KeyCode
+    | PlayAgain
 
 
 type GameState
