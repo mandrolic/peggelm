@@ -1,12 +1,10 @@
 module Model
     exposing
-        (
-         initial
+        ( initial
         , update
         )
 
 import Bounds
-
 import Levels exposing (..)
 import List.Extra exposing (..)
 import Math.Vector2 exposing (..)
@@ -30,8 +28,21 @@ scoreMarkerFloatSpeed : Float
 scoreMarkerFloatSpeed =
     0.05
 
-longShotThreshold = 300
-ballsPerLevel = 10
+
+barrelRotateSpeed : Float
+barrelRotateSpeed =
+    0.05
+
+
+longShotThreshold : number
+longShotThreshold =
+    300
+
+
+ballsPerLevel : number
+ballsPerLevel =
+    10
+
 
 physicsLens : Lens { b | physics : Physics } Physics
 physicsLens =
@@ -60,97 +71,99 @@ velocityLens =
 
 resetToLevel : LevelDef -> Model -> Model
 resetToLevel ls model =
-  { model
-    | walls = ls.walls
-    , pegs = ls.pegs
-    , gameState = Aiming
-    , balls = []
-    , scoreMarkers = []
-    , ballsLeft = model.ballsLeft + ballsPerLevel
-  }
+    { model
+        | walls = ls.walls
+        , pegs = ls.pegs
+        , gameState = Aiming
+        , balls = []
+        , scoreMarkers = []
+        , ballsLeft = model.ballsLeft + ballsPerLevel
+    }
+
 
 initial : Model
 initial =
-      { score = 0
-      , ballsLeft = 0
-      , balls = []
-      , pegs = []
-      , scoreMarkers = []
-      , walls = []
-      , bucket = { xOffset = 0, width = 100.0, direction = 1.0 }
-      , barrelAngle = 45.0
-      , gameState = Aiming
-      , remainingLevels = Levels.allLevels
-      , paused = False
-      , windowWidth = 16
-      , windowHeight = 16
-      } |> resetToLevel initialiseLevel1
+    { score = 0
+    , ballsLeft = 0
+    , balls = []
+    , pegs = []
+    , scoreMarkers = []
+    , walls = []
+    , bucket = { xOffset = 0, width = 100.0, direction = 1.0 }
+    , barrelAngle = 45.0
+    , barrelMoveDirection = Right
+    , gameState = Aiming
+    , remainingLevels = Levels.allLevels
+    , paused = False
+    , windowWidth = 16
+    , windowHeight = 16
+    }
+        |> resetToLevel initialiseLevel1
+
 
 
 --
 -- Main Game loop update
 --
 
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update action model =
     case action of
-
         WindowResize newSize ->
-              getModelWithNewWindowSize model newSize
+            getModelWithNewWindowSize model newSize
 
         Tick deltaTimeMs ->
-            if model.paused
-                then ( model, Cmd.none)
-                else tickModel deltaTimeMs model
+            if model.paused then
+                ( model, Cmd.none )
+            else
+                tickModel deltaTimeMs model
+
         _ ->
+            case (model.gameState) of
+                Aiming ->
+                    case action of
+                        UserClicked location ->
+                            ( startBallInPlay location model, Cmd.none )
 
-          case (model.gameState) of
-              Aiming ->
-                  case action of
+                        --      MouseMoved location ->
+                        --            ( adjustBarrelAim location model, Cmd.none )
+                        _ ->
+                            ( model, Cmd.none )
 
-                      UserClicked location ->
-                          ( startBallInPlay location model, Cmd.none )
+                BallInPlay ->
+                    case action of
+                        KeyDown keyCode ->
+                            case keyCode of
+                                65 ->
+                                    ( gotoNextLevel model, Cmd.none )
 
-                      MouseMoved location ->
-                          ( adjustBarrelAim location model, Cmd.none )
+                                80 ->
+                                    ( { model | paused = not model.paused }, Cmd.none )
 
-                      _ ->
-                          ( model, Cmd.none )
+                                _ ->
+                                    ( model, Cmd.none )
 
-              BallInPlay ->
-                  case action of
+                        _ ->
+                            ( model, Cmd.none )
 
-                      KeyDown keyCode ->
-                          case keyCode of
-                              65 ->
-                                  ( gotoNextLevel model, Cmd.none )
+                SweepingUp ->
+                    case action of
+                        SweepUp ->
+                            removeHitPeg model
 
-                              80 ->
-                                  ({ model | paused = not model.paused } , Cmd.none )
+                        _ ->
+                            ( model, Cmd.none )
 
-                              _ ->
-                                  ( model, Cmd.none )
+                GameOver ->
+                    case action of
+                        PlayAgain ->
+                            ( { initial | windowWidth = model.windowWidth, windowHeight = model.windowHeight }
+                            , Cmd.none
+                            )
 
-                      _ ->
-                          ( model, Cmd.none )
-
-              SweepingUp ->
-                  case action of
-                      SweepUp ->
-                          removeHitPeg model
-
-                      _ ->
-                          ( model, Cmd.none )
-
-              GameOver ->
-                      case action of
-                          PlayAgain ->
-                              ( { initial | windowWidth = model.windowWidth, windowHeight = model.windowHeight } ,
-                                     Cmd.none)
-
-                          _ ->
-                              ( model, Cmd.none )
-
+                        _ ->
+                            ( model, Cmd.none )
 
 
 gravity : Vec2
@@ -158,7 +171,29 @@ gravity =
     vec2 0.0 0.001
 
 
+tickBarrelAim : Float -> Model -> Model
+tickBarrelAim deltaTimeMs model =
+    let
+        barrelAngle_ =
+            case model.barrelMoveDirection of
+                Right ->
+                    min (model.barrelAngle + (barrelRotateSpeed * deltaTimeMs)) 150
 
+                Left ->
+                    max (model.barrelAngle - (barrelRotateSpeed * deltaTimeMs)) 30
+    in
+        { model
+            | barrelAngle = barrelAngle_
+            , barrelMoveDirection =
+                if barrelAngle_ >= 150 then
+                    Left
+                else
+                    (if barrelAngle_ <= 30   then
+                        Right
+                     else
+                        model.barrelMoveDirection
+                    )
+        }
 
 
 adjustBarrelAim : Vec2 -> Model -> Model
@@ -182,8 +217,8 @@ initialBall =
         , velocity = vec2 0.0 0.0
         , acceleration = vec2 0.0 0.0
         }
-      , hitCount = 0
-      , lastHitLocation = vec2 0.0 0.0
+    , hitCount = 0
+    , lastHitLocation = vec2 0.0 0.0
     }
 
 
@@ -203,11 +238,11 @@ startBallInPlay clickedPosition model =
             initialBall
                 |> velocityLens.set launchVector
                 |> positionLens.set barrelTip
-                |> (\b -> {b | lastHitLocation = barrelTip})
+                |> (\b -> { b | lastHitLocation = barrelTip })
     in
         { model
-          | gameState = BallInPlay
-          , balls = [ launchedBall ]
+            | gameState = BallInPlay
+            , balls = [ launchedBall ]
         }
 
 
@@ -243,30 +278,31 @@ endSweep model =
 
 removeHitPeg : Model -> ( Model, Cmd Msg )
 removeHitPeg model =
-        model.pegs
-            |> List.filter (\p -> p.hitCount > 0)
-            |> List.head
-            |> Maybe.map (\p -> ( { model | pegs = model.pegs |> remove p }, doAfterDelay SweepUp 100))
-            |> withDefault ( endSweep model, Cmd.none )
-
-
+    model.pegs
+        |> List.filter (\p -> p.hitCount > 0)
+        |> List.head
+        |> Maybe.map (\p -> ( { model | pegs = model.pegs |> remove p }, doAfterDelay SweepUp 100 ))
+        |> withDefault ( endSweep model, Cmd.none )
 
 
 tickModel : Time -> Model -> ( Model, Cmd Msg )
 tickModel deltaTimeMs model =
     let
-        model_  = model
-            |> (tickBalls deltaTimeMs)
-            |> (tickPegs deltaTimeMs)
-            |> processWallCollisions
-            |> (processScoreMarkers deltaTimeMs)
-            |> (tickBucket deltaTimeMs)
-            |> processPegCollisions
-            |> processBucketCollisions
+        model_ =
+            model
+                |> (tickBarrelAim deltaTimeMs)
+                |> (tickBalls deltaTimeMs)
+                |> (tickPegs deltaTimeMs)
+                |> processWallCollisions
+                |> (processScoreMarkers deltaTimeMs)
+                |> (tickBucket deltaTimeMs)
+                |> processPegCollisions
+                |> processBucketCollisions
 
-        isBallsAtBottom = model_.balls
-                        |> List.map (positionLens.get >> getY)
-                        |> List.all ((<) Bounds.gameY)
+        isBallsAtBottom =
+            model_.balls
+                |> List.map (positionLens.get >> getY)
+                |> List.all ((<) Bounds.gameY)
 
         ( newState, command ) =
             if model_.gameState == BallInPlay && isBallsAtBottom then
@@ -274,9 +310,7 @@ tickModel deltaTimeMs model =
             else
                 ( model_.gameState, Cmd.none )
     in
-        (   { model_  | gameState = newState } , command )
-
-
+        ( { model_ | gameState = newState }, command )
 
 
 tickPegs : Time -> Model -> Model
@@ -284,9 +318,9 @@ tickPegs deltaTimeMs model =
     let
         tickPeg peg =
             { peg | scoreDisplayTimeLeft = max (peg.scoreDisplayTimeLeft - deltaTimeMs) 0 }
-
     in
         { model | pegs = List.map tickPeg model.pegs }
+
 
 tickBalls : Time -> Model -> Model
 tickBalls deltaTimeMs model =
@@ -295,7 +329,6 @@ tickBalls deltaTimeMs model =
             ball
                 |> modify physicsLens (\p -> { p | acceleration = gravity })
                 |> modify physicsLens (Physics.tickPhysics deltaTimeMs)
-
     in
         { model | balls = model.balls |> List.map tickBall }
 
@@ -335,6 +368,8 @@ processScoreMarkers deltaTimeMs model =
 
 
 {- Process collisions between ball and walls.    Walls are only vertical at the moment so the rebound is only reflected in the H axis -}
+
+
 processWallCollisions : Model -> Model
 processWallCollisions model =
     let
@@ -371,36 +406,45 @@ collideWithWall model ball wall =
                 |> modify positionLens (setX (wall.hPos + offset))
                 |> modify velocityLens flipXaxis
     in
-        { model | balls =  ball_ :: (remove ball model.balls) }
+        { model | balls = ball_ :: (remove ball model.balls) }
 
-processBucketCollisions :  Model ->  Model
+
+processBucketCollisions : Model -> Model
 processBucketCollisions model =
-  let
-      -- For each ball that is touching the bucket:
-      --  * Add a bonus ball
-      --  * Create bonus popup
-      --  * Remove that ball from play
+    let
+        -- For each ball that is touching the bucket:
+        --  * Add a bonus ball
+        --  * Create bonus popup
+        --  * Remove that ball from play
+        isInBucket ball =
+            (getX ball.physics.position)
+                > model.bucket.xOffset
+                + ball.physics.radius
+                && (getX ball.physics.position)
+                < (model.bucket.xOffset + model.bucket.width - ball.physics.radius)
+                && (getY ball.physics.position)
+                > Bounds.gameY
 
-    isInBucket ball  =  (getX ball.physics.position) > model.bucket.xOffset + ball.physics.radius
-                            && (getX ball.physics.position) < (model.bucket.xOffset + model.bucket.width - ball.physics.radius)
-                            && (getY ball.physics.position) > Bounds.gameY
+        ballsInBucket =
+            model.balls |> List.filter isInBucket
 
-    ballsInBucket = model.balls |> List.filter isInBucket
+        popups =
+            ballsInBucket |> List.map (\b -> newScoreMarker Nothing "FREE BALL" (setY Bounds.gameY b.physics.position))
+    in
+        { model
+            | balls = model.balls |> List.filter (\b -> List.Extra.notMember b ballsInBucket)
+            , scoreMarkers = List.concat [ popups, model.scoreMarkers ]
+            , ballsLeft = model.ballsLeft + (List.length ballsInBucket)
+        }
 
-    popups = ballsInBucket |> List.map  (\b -> newScoreMarker Nothing "FREE BALL"  (setY Bounds.gameY b.physics.position))
-
-  in
-    { model
-          | balls = model.balls |> List.filter (\b -> List.Extra.notMember b ballsInBucket)
-          , scoreMarkers = List.concat  [popups, model.scoreMarkers ]
-          , ballsLeft = model.ballsLeft + (List.length ballsInBucket)
-          }
 
 
 {- Process collisions between ball and other pegs. if a collision is found,
    then reverse the velocity on by the normal of the collision surface
    and add some points
 -}
+
+
 processPegCollisions : Model -> Model
 processPegCollisions model =
     let
@@ -412,40 +456,56 @@ processPegCollisions model =
                 |> Maybe.map (collideWithPeg modelSoFar ball)
                 |> Maybe.withDefault modelSoFar
     in
-       model.balls |> List.foldl testCollide model
-
-
-
-
+        model.balls |> List.foldl testCollide model
 
 
 collideWithPeg : Model -> Ball -> Peg -> Model
 collideWithPeg model ball peg =
     let
-        (pointsEarned, maybeBonus) =
-              case peg.pegType of
-                  MultiBall -> (100,  if peg.hitCount == 0 then Just "MULTI BALL" else Nothing)
-                  Red -> (50,
-                    (case  peg.hitCount of
-                      2 -> Just "TRIPLE HIT"
-                      3 -> Just "QUADRUPLE HIT"
-                      _ ->  Nothing))
-                  Normal ->
-                      case  peg.hitCount of
-                        2 -> (40, Just "TRIPLE HIT")
-                        3 -> (40, Just "QUADRUPLE HIT")
-                        count -> (10 * (count + 1), Nothing)
+        ( pointsEarned, maybeBonus ) =
+            case peg.pegType of
+                MultiBall ->
+                    ( 100
+                    , if peg.hitCount == 0 then
+                        Just "MULTI BALL"
+                      else
+                        Nothing
+                    )
+
+                Red ->
+                    ( 50
+                    , (case peg.hitCount of
+                        2 ->
+                            Just "TRIPLE HIT"
+
+                        3 ->
+                            Just "QUADRUPLE HIT"
+
+                        _ ->
+                            Nothing
+                      )
+                    )
+
+                Normal ->
+                    case peg.hitCount of
+                        2 ->
+                            ( 40, Just "TRIPLE HIT" )
+
+                        3 ->
+                            ( 40, Just "QUADRUPLE HIT" )
+
+                        count ->
+                            ( 10 * (count + 1), Nothing )
 
         peg_ =
             { peg
-              | hitCount = peg.hitCount + 1
-              , scoreLastHit = pointsEarned
-              , scoreDisplayTimeLeft = 600
-             }
+                | hitCount = peg.hitCount + 1
+                , scoreLastHit = pointsEarned
+                , scoreDisplayTimeLeft = 600
+            }
 
         pegs_ =
             model.pegs |> replaceIf (\p -> p == peg) peg_
-
 
         physUpdate physics =
             let
@@ -460,11 +520,10 @@ collideWithPeg model ball peg =
             in
                 { physics | velocity = bounceV, position = newBallPos }
 
-
-        farShotBonus = Just (Math.Vector2.distance  peg.position  ball.lastHitLocation)
+        farShotBonus =
+            Just (Math.Vector2.distance peg.position ball.lastHitLocation)
                 |> Maybe.Extra.filter (\d -> d > longShotThreshold)
                 |> Maybe.map (\d -> newScoreMarker Nothing "LONG SHOT" peg.position)
-
 
         temp =
             { ball
@@ -472,29 +531,38 @@ collideWithPeg model ball peg =
                 , lastHitLocation = peg.position
             }
 
-        reboundedBall = modify physicsLens physUpdate temp
+        reboundedBall =
+            modify physicsLens physUpdate temp
 
+        socreMarkers_ =
+            Maybe.Extra.values [ (maybeBonus |> Maybe.map (\b -> newScoreMarker (Just pointsEarned) b peg.position)), farShotBonus ]
+                |> List.append model.scoreMarkers
 
-        socreMarkers_ =  Maybe.Extra.values [ (maybeBonus |> Maybe.map (\b -> newScoreMarker (Just pointsEarned) b peg.position)), farShotBonus ]
-                           |> List.append model.scoreMarkers
-
-        socreMarkers__ = if reboundedBall.hitCount >= 8
-          then (newScoreMarker Nothing  (toString  reboundedBall.hitCount ++ " HITS") peg.position) :: socreMarkers_
-          else socreMarkers_
+        socreMarkers__ =
+            if reboundedBall.hitCount >= 8 then
+                (newScoreMarker Nothing (toString reboundedBall.hitCount ++ " HITS") peg.position) :: socreMarkers_
+            else
+                socreMarkers_
 
         balls_ =
-          (case peg.pegType of
-              MultiBall ->  if (peg.hitCount == 0) then (reboundedBall |>  modify velocityLens flipXaxis )  ::  model.balls else model.balls
-              _ -> model.balls)
-                |>  replaceIf (\b -> b == ball) reboundedBall
+            (case peg.pegType of
+                MultiBall ->
+                    if (peg.hitCount == 0) then
+                        (reboundedBall |> modify velocityLens flipXaxis) :: model.balls
+                    else
+                        model.balls
 
+                _ ->
+                    model.balls
+            )
+                |> replaceIf (\b -> b == ball) reboundedBall
     in
-            { model
-                | pegs = pegs_
-                , balls = balls_
-                , scoreMarkers = socreMarkers__
-                , score = model.score + pointsEarned
-            }
+        { model
+            | pegs = pegs_
+            , balls = balls_
+            , scoreMarkers = socreMarkers__
+            , score = model.score + pointsEarned
+        }
 
 
 
@@ -521,11 +589,11 @@ getModelWithNewWindowSize model windowSize =
         ( model_, Cmd.none )
 
 
-newScoreMarker : (Maybe Int) -> String -> Vec2 -> ScoreMarker
+newScoreMarker : Maybe Int -> String -> Vec2 -> ScoreMarker
 newScoreMarker score text pos =
     { radius = 22
     , position = pos
-    , text =  text ++ (score |> Maybe.map (\s -> "\n" ++ (toString s)) |> withDefault "")
+    , text = text ++ (score |> Maybe.map (\s -> "\n" ++ (toString s)) |> withDefault "")
     , opacity = 0.5
     , scoreMarkerFadeSpeed = 0.5 / 2000.0
     }

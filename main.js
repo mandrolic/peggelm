@@ -11539,7 +11539,13 @@ var _user$project$BasicHelpers$consMaybe = function (_p1) {
 };
 
 var _user$project$Bounds$gameY = 500.0;
+var _user$project$Bounds$centerVert = function (height) {
+	return (_user$project$Bounds$gameY - height) / 2;
+};
 var _user$project$Bounds$gameX = 500.0;
+var _user$project$Bounds$centerHoriz = function (width) {
+	return (_user$project$Bounds$gameX - width) / 2;
+};
 
 var _user$project$VectorHelpers$vec2IsInBounds = F4(
 	function (origin, width, height, pos) {
@@ -11699,7 +11705,9 @@ var _user$project$Types$Model = function (a) {
 										return function (k) {
 											return function (l) {
 												return function (m) {
-													return {gameState: a, barrelAngle: b, score: c, ballsLeft: d, remainingLevels: e, paused: f, balls: g, pegs: h, walls: i, scoreMarkers: j, bucket: k, windowWidth: l, windowHeight: m};
+													return function (n) {
+														return {gameState: a, barrelAngle: b, barrelMoveDirection: c, score: d, ballsLeft: e, remainingLevels: f, paused: g, balls: h, pegs: i, walls: j, scoreMarkers: k, bucket: l, windowWidth: m, windowHeight: n};
+													};
 												};
 											};
 										};
@@ -11716,6 +11724,7 @@ var _user$project$Types$Model = function (a) {
 var _user$project$Types$MultiBall = {ctor: 'MultiBall'};
 var _user$project$Types$Red = {ctor: 'Red'};
 var _user$project$Types$Normal = {ctor: 'Normal'};
+var _user$project$Types$PlayAgain = {ctor: 'PlayAgain'};
 var _user$project$Types$KeyDown = function (a) {
 	return {ctor: 'KeyDown', _0: a};
 };
@@ -11736,6 +11745,8 @@ var _user$project$Types$GameOver = {ctor: 'GameOver'};
 var _user$project$Types$SweepingUp = {ctor: 'SweepingUp'};
 var _user$project$Types$BallInPlay = {ctor: 'BallInPlay'};
 var _user$project$Types$Aiming = {ctor: 'Aiming'};
+var _user$project$Types$Left = {ctor: 'Left'};
+var _user$project$Types$Right = {ctor: 'Right'};
 
 var _user$project$Levels$randomRedPegs = function (pegs) {
 	var pegGenerator = A2(
@@ -12233,93 +12244,6 @@ var _user$project$Model$adjustBarrelAim = F2(
 			{barrelAngle: barrelAngle_});
 	});
 var _user$project$Model$gravity = A2(_elm_community$linear_algebra$Math_Vector2$vec2, 0.0, 1.0e-3);
-var _user$project$Model$resetToLevel = F2(
-	function (ls, model) {
-		return _elm_lang$core$Native_Utils.update(
-			model,
-			{
-				walls: ls.walls,
-				pegs: ls.pegs,
-				gameState: _user$project$Types$Aiming,
-				balls: {ctor: '[]'},
-				scoreMarkers: {ctor: '[]'},
-				ballsLeft: model.ballsLeft + 10
-			});
-	});
-var _user$project$Model$initial = A2(
-	_user$project$Model$resetToLevel,
-	_user$project$Levels$initialiseLevel1,
-	{
-		score: 0,
-		ballsLeft: 0,
-		balls: {ctor: '[]'},
-		pegs: {ctor: '[]'},
-		scoreMarkers: {ctor: '[]'},
-		walls: {ctor: '[]'},
-		bucket: {xOffset: 0, width: 100.0, direction: 1.0},
-		barrelAngle: 45.0,
-		gameState: _user$project$Types$Aiming,
-		remainingLevels: _user$project$Levels$allLevels,
-		paused: false,
-		windowWidth: 16,
-		windowHeight: 16
-	});
-var _user$project$Model$gotoNextLevel = function (model) {
-	var _p0 = model.remainingLevels;
-	if (_p0.ctor === '::') {
-		return A2(
-			_user$project$Model$resetToLevel,
-			_p0._0,
-			_elm_lang$core$Native_Utils.update(
-				model,
-				{remainingLevels: _p0._1}));
-	} else {
-		return A2(_user$project$Model$resetToLevel, _user$project$Levels$initialiseLevel1, model);
-	}
-};
-var _user$project$Model$endSweep = function (model) {
-	return (!A2(
-		_elm_lang$core$List$any,
-		function (p) {
-			return _elm_lang$core$Native_Utils.eq(p.pegType, _user$project$Types$Red);
-		},
-		model.pegs)) ? _user$project$Model$gotoNextLevel(model) : _elm_lang$core$Native_Utils.update(
-		model,
-		{
-			gameState: (_elm_lang$core$Native_Utils.cmp(model.ballsLeft, 1) > 0) ? _user$project$Types$Aiming : _user$project$Types$GameOver,
-			ballsLeft: model.ballsLeft - 1,
-			balls: {ctor: '[]'}
-		});
-};
-var _user$project$Model$removeHitPeg = function (model) {
-	return A2(
-		_elm_lang$core$Maybe$withDefault,
-		{
-			ctor: '_Tuple2',
-			_0: _user$project$Model$endSweep(model),
-			_1: _elm_lang$core$Platform_Cmd$none
-		},
-		A2(
-			_elm_lang$core$Maybe$map,
-			function (p) {
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							pegs: A2(_elm_community$list_extra$List_Extra$remove, p, model.pegs)
-						}),
-					_1: A2(_user$project$BasicHelpers$doAfterDelay, _user$project$Types$SweepUp, 100)
-				};
-			},
-			_elm_lang$core$List$head(
-				A2(
-					_elm_lang$core$List$filter,
-					function (p) {
-						return _elm_lang$core$Native_Utils.cmp(p.hitCount, 0) > 0;
-					},
-					model.pegs))));
-};
 var _user$project$Model$physVelocityLens = A2(
 	_arturopala$elm_monocle$Monocle_Lens$Lens,
 	function (_) {
@@ -12426,6 +12350,95 @@ var _user$project$Model$tickBalls = F2(
 				balls: A2(_elm_lang$core$List$map, tickBall, model.balls)
 			});
 	});
+var _user$project$Model$ballsPerLevel = 10;
+var _user$project$Model$resetToLevel = F2(
+	function (ls, model) {
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				walls: ls.walls,
+				pegs: ls.pegs,
+				gameState: _user$project$Types$Aiming,
+				balls: {ctor: '[]'},
+				scoreMarkers: {ctor: '[]'},
+				ballsLeft: model.ballsLeft + _user$project$Model$ballsPerLevel
+			});
+	});
+var _user$project$Model$initial = A2(
+	_user$project$Model$resetToLevel,
+	_user$project$Levels$initialiseLevel1,
+	{
+		score: 0,
+		ballsLeft: 0,
+		balls: {ctor: '[]'},
+		pegs: {ctor: '[]'},
+		scoreMarkers: {ctor: '[]'},
+		walls: {ctor: '[]'},
+		bucket: {xOffset: 0, width: 100.0, direction: 1.0},
+		barrelAngle: 45.0,
+		barrelMoveDirection: _user$project$Types$Right,
+		gameState: _user$project$Types$Aiming,
+		remainingLevels: _user$project$Levels$allLevels,
+		paused: false,
+		windowWidth: 16,
+		windowHeight: 16
+	});
+var _user$project$Model$gotoNextLevel = function (model) {
+	var _p0 = model.remainingLevels;
+	if (_p0.ctor === '::') {
+		return A2(
+			_user$project$Model$resetToLevel,
+			_p0._0,
+			_elm_lang$core$Native_Utils.update(
+				model,
+				{remainingLevels: _p0._1}));
+	} else {
+		return A2(_user$project$Model$resetToLevel, _user$project$Levels$initialiseLevel1, model);
+	}
+};
+var _user$project$Model$endSweep = function (model) {
+	return (!A2(
+		_elm_lang$core$List$any,
+		function (p) {
+			return _elm_lang$core$Native_Utils.eq(p.pegType, _user$project$Types$Red);
+		},
+		model.pegs)) ? _user$project$Model$gotoNextLevel(model) : _elm_lang$core$Native_Utils.update(
+		model,
+		{
+			gameState: (_elm_lang$core$Native_Utils.cmp(model.ballsLeft, 1) > 0) ? _user$project$Types$Aiming : _user$project$Types$GameOver,
+			ballsLeft: model.ballsLeft - 1,
+			balls: {ctor: '[]'}
+		});
+};
+var _user$project$Model$removeHitPeg = function (model) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		{
+			ctor: '_Tuple2',
+			_0: _user$project$Model$endSweep(model),
+			_1: _elm_lang$core$Platform_Cmd$none
+		},
+		A2(
+			_elm_lang$core$Maybe$map,
+			function (p) {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							pegs: A2(_elm_community$list_extra$List_Extra$remove, p, model.pegs)
+						}),
+					_1: A2(_user$project$BasicHelpers$doAfterDelay, _user$project$Types$SweepUp, 100)
+				};
+			},
+			_elm_lang$core$List$head(
+				A2(
+					_elm_lang$core$List$filter,
+					function (p) {
+						return _elm_lang$core$Native_Utils.cmp(p.hitCount, 0) > 0;
+					},
+					model.pegs))));
+};
 var _user$project$Model$longShotThreshold = 300;
 var _user$project$Model$collideWithPeg = F3(
 	function (model, ball, peg) {
@@ -12586,6 +12599,24 @@ var _user$project$Model$processPegCollisions = function (model) {
 		});
 	return A3(_elm_lang$core$List$foldl, testCollide, model, model.balls);
 };
+var _user$project$Model$barrelRotateSpeed = 5.0e-2;
+var _user$project$Model$tickBarrelAim = F2(
+	function (deltaTimeMs, model) {
+		var barrelAngle_ = function () {
+			var _p6 = model.barrelMoveDirection;
+			if (_p6.ctor === 'Right') {
+				return A2(_elm_lang$core$Basics$min, model.barrelAngle + (_user$project$Model$barrelRotateSpeed * deltaTimeMs), 150);
+			} else {
+				return A2(_elm_lang$core$Basics$max, model.barrelAngle - (_user$project$Model$barrelRotateSpeed * deltaTimeMs), 30);
+			}
+		}();
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				barrelAngle: barrelAngle_,
+				barrelMoveDirection: (_elm_lang$core$Native_Utils.cmp(barrelAngle_, 150) > -1) ? _user$project$Types$Left : ((_elm_lang$core$Native_Utils.cmp(barrelAngle_, 30) < 1) ? _user$project$Types$Right : model.barrelMoveDirection)
+			});
+	});
 var _user$project$Model$scoreMarkerFloatSpeed = 5.0e-2;
 var _user$project$Model$processScoreMarkers = F2(
 	function (deltaTimeMs, model) {
@@ -12621,7 +12652,10 @@ var _user$project$Model$tickModel = F2(
 							A2(
 								_user$project$Model$tickPegs,
 								deltaTimeMs,
-								A2(_user$project$Model$tickBalls, deltaTimeMs, model)))))));
+								A2(
+									_user$project$Model$tickBalls,
+									deltaTimeMs,
+									A2(_user$project$Model$tickBarrelAim, deltaTimeMs, model))))))));
 		var isBallsAtBottom = A2(
 			_elm_lang$core$List$all,
 			F2(
@@ -12630,18 +12664,18 @@ var _user$project$Model$tickModel = F2(
 				})(_user$project$Bounds$gameY),
 			A2(
 				_elm_lang$core$List$map,
-				function (_p6) {
+				function (_p7) {
 					return _elm_community$linear_algebra$Math_Vector2$getY(
-						_user$project$Model$positionLens.get(_p6));
+						_user$project$Model$positionLens.get(_p7));
 				},
 				model_.balls));
-		var _p7 = (_elm_lang$core$Native_Utils.eq(model_.gameState, _user$project$Types$BallInPlay) && isBallsAtBottom) ? {
+		var _p8 = (_elm_lang$core$Native_Utils.eq(model_.gameState, _user$project$Types$BallInPlay) && isBallsAtBottom) ? {
 			ctor: '_Tuple2',
 			_0: _user$project$Types$SweepingUp,
 			_1: A2(_user$project$BasicHelpers$doAfterDelay, _user$project$Types$SweepUp, 100)
 		} : {ctor: '_Tuple2', _0: model_.gameState, _1: _elm_lang$core$Platform_Cmd$none};
-		var newState = _p7._0;
-		var command = _p7._1;
+		var newState = _p8._0;
+		var command = _p8._1;
 		return {
 			ctor: '_Tuple2',
 			_0: _elm_lang$core$Native_Utils.update(
@@ -12681,38 +12715,31 @@ var _user$project$Model$startBallInPlay = F2(
 	});
 var _user$project$Model$update = F2(
 	function (action, model) {
-		var _p8 = action;
-		switch (_p8.ctor) {
+		var _p9 = action;
+		switch (_p9.ctor) {
 			case 'WindowResize':
-				return A2(_user$project$Model$getModelWithNewWindowSize, model, _p8._0);
+				return A2(_user$project$Model$getModelWithNewWindowSize, model, _p9._0);
 			case 'Tick':
-				return model.paused ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : A2(_user$project$Model$tickModel, _p8._0, model);
+				return model.paused ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : A2(_user$project$Model$tickModel, _p9._0, model);
 			default:
-				var _p9 = model.gameState;
-				switch (_p9.ctor) {
+				var _p10 = model.gameState;
+				switch (_p10.ctor) {
 					case 'Aiming':
-						var _p10 = action;
-						switch (_p10.ctor) {
-							case 'UserClicked':
-								return {
-									ctor: '_Tuple2',
-									_0: A2(_user$project$Model$startBallInPlay, _p10._0, model),
-									_1: _elm_lang$core$Platform_Cmd$none
-								};
-							case 'MouseMoved':
-								return {
-									ctor: '_Tuple2',
-									_0: A2(_user$project$Model$adjustBarrelAim, _p10._0, model),
-									_1: _elm_lang$core$Platform_Cmd$none
-								};
-							default:
-								return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+						var _p11 = action;
+						if (_p11.ctor === 'UserClicked') {
+							return {
+								ctor: '_Tuple2',
+								_0: A2(_user$project$Model$startBallInPlay, _p11._0, model),
+								_1: _elm_lang$core$Platform_Cmd$none
+							};
+						} else {
+							return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 						}
 					case 'BallInPlay':
-						var _p11 = action;
-						if (_p11.ctor === 'KeyDown') {
-							var _p12 = _p11._0;
-							switch (_p12) {
+						var _p12 = action;
+						if (_p12.ctor === 'KeyDown') {
+							var _p13 = _p12._0;
+							switch (_p13) {
 								case 65:
 									return {
 										ctor: '_Tuple2',
@@ -12734,16 +12761,98 @@ var _user$project$Model$update = F2(
 							return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 						}
 					case 'SweepingUp':
-						var _p13 = action;
-						if (_p13.ctor === 'SweepUp') {
+						var _p14 = action;
+						if (_p14.ctor === 'SweepUp') {
 							return _user$project$Model$removeHitPeg(model);
 						} else {
 							return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 						}
 					default:
-						return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+						var _p15 = action;
+						if (_p15.ctor === 'PlayAgain') {
+							return {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Native_Utils.update(
+									_user$project$Model$initial,
+									{windowWidth: model.windowWidth, windowHeight: model.windowHeight}),
+								_1: _elm_lang$core$Platform_Cmd$none
+							};
+						} else {
+							return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+						}
 				}
 		}
+	});
+
+var _user$project$SvgHelpers$tostr = function (tfm) {
+	var _p0 = tfm;
+	switch (_p0.ctor) {
+		case 'Rotate':
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				'rotate(',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(_p0._0),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						' ',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Basics$toString(_p0._1),
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								' ',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									_elm_lang$core$Basics$toString(_p0._2),
+									')'))))));
+		case 'Translate':
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				'translate(',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(_p0._0),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						' ',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Basics$toString(_p0._1),
+							')'))));
+		default:
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				'scale(',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(_p0._0),
+					')'));
+	}
+};
+var _user$project$SvgHelpers$tfm = function (transforms) {
+	return A2(
+		_elm_lang$core$String$join,
+		',',
+		A2(_elm_lang$core$List$map, _user$project$SvgHelpers$tostr, transforms));
+};
+var _user$project$SvgHelpers$Scale = function (a) {
+	return {ctor: 'Scale', _0: a};
+};
+var _user$project$SvgHelpers$Translate = F2(
+	function (a, b) {
+		return {ctor: 'Translate', _0: a, _1: b};
+	});
+var _user$project$SvgHelpers$translateVec2 = function (pos) {
+	return A2(
+		_user$project$SvgHelpers$Translate,
+		_elm_community$linear_algebra$Math_Vector2$getX(pos),
+		_elm_community$linear_algebra$Math_Vector2$getY(pos));
+};
+var _user$project$SvgHelpers$Rotate = F3(
+	function (a, b, c) {
+		return {ctor: 'Rotate', _0: a, _1: b, _2: c};
 	});
 
 var _user$project$View$getCoords = F2(
@@ -12826,66 +12935,13 @@ var _user$project$View$getClickPos = A3(
 			_1: {ctor: '[]'}
 		},
 		_elm_lang$core$Json_Decode$int));
-var _user$project$View$tostr = function (tfm) {
-	var _p2 = tfm;
-	switch (_p2.ctor) {
-		case 'Rotate':
-			return A2(
-				_elm_lang$core$Basics_ops['++'],
-				'rotate(',
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					_elm_lang$core$Basics$toString(_p2._0),
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						' ',
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(_p2._1),
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								' ',
-								A2(
-									_elm_lang$core$Basics_ops['++'],
-									_elm_lang$core$Basics$toString(_p2._2),
-									')'))))));
-		case 'Translate':
-			return A2(
-				_elm_lang$core$Basics_ops['++'],
-				'translate(',
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					_elm_lang$core$Basics$toString(_p2._0),
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						' ',
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(_p2._1),
-							')'))));
-		default:
-			return A2(
-				_elm_lang$core$Basics_ops['++'],
-				'scale(',
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					_elm_lang$core$Basics$toString(_p2._0),
-					')'));
-	}
-};
-var _user$project$View$tfm = function (transforms) {
-	return A2(
-		_elm_lang$core$String$join,
-		',',
-		A2(_elm_lang$core$List$map, _user$project$View$tostr, transforms));
-};
-var _user$project$View$getYStr = function (_p3) {
+var _user$project$View$getYStr = function (_p2) {
 	return _elm_lang$core$Basics$toString(
-		_elm_community$linear_algebra$Math_Vector2$getY(_p3));
+		_elm_community$linear_algebra$Math_Vector2$getY(_p2));
 };
-var _user$project$View$getXStr = function (_p4) {
+var _user$project$View$getXStr = function (_p3) {
 	return _elm_lang$core$Basics$toString(
-		_elm_community$linear_algebra$Math_Vector2$getX(_p4));
+		_elm_community$linear_algebra$Math_Vector2$getX(_p3));
 };
 var _user$project$View$gameDimensions = F2(
 	function (windowWidth, windowHeight) {
@@ -13019,38 +13075,73 @@ var _user$project$View$svgGameTextLine = function (text) {
 		});
 };
 var _user$project$View$svgGameOver = function (backgroundTextOpacity) {
+	var rectWidth = 200;
+	var rectLeft = (_user$project$Bounds$gameX - rectWidth) / 2;
 	return A2(
-		_elm_lang$svg$Svg$text_,
+		_elm_lang$svg$Svg$g,
+		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: _elm_lang$svg$Svg_Attributes$y('150'),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$svg$Svg_Attributes$class('game-text'),
-				_1: {
+			_0: A2(
+				_elm_lang$svg$Svg$rect,
+				{
 					ctor: '::',
-					_0: _elm_lang$svg$Svg_Attributes$fontSize('80'),
+					_0: _elm_lang$svg$Svg_Attributes$fill('black'),
 					_1: {
 						ctor: '::',
-						_0: _elm_lang$svg$Svg_Attributes$strokeOpacity(
-							_elm_lang$core$Basics$toString(backgroundTextOpacity)),
-						_1: {ctor: '[]'}
+						_0: _elm_lang$svg$Svg_Attributes$fillOpacity('0.9'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$width(
+								_elm_lang$core$Basics$toString(_user$project$Bounds$gameX)),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$height(
+									_elm_lang$core$Basics$toString(_user$project$Bounds$gameY)),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Events$onClick(_user$project$Types$PlayAgain),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
 					}
-				}
-			}
-		},
-		A2(
-			_elm_lang$core$List$map,
-			_user$project$View$svgGameTextLine,
-			{
+				},
+				{ctor: '[]'}),
+			_1: {
 				ctor: '::',
-				_0: 'GAME',
-				_1: {
-					ctor: '::',
-					_0: 'OVER',
-					_1: {ctor: '[]'}
-				}
-			}));
+				_0: A2(
+					_elm_lang$svg$Svg$text_,
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$class('game-text'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$y(
+								_elm_lang$core$Basics$toString((_user$project$Bounds$gameY / 2) - 60)),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$strokeOpacity(
+									_elm_lang$core$Basics$toString(backgroundTextOpacity)),
+								_1: {ctor: '[]'}
+							}
+						}
+					},
+					A2(
+						_elm_lang$core$List$map,
+						_user$project$View$svgGameTextLine,
+						{
+							ctor: '::',
+							_0: 'GAME',
+							_1: {
+								ctor: '::',
+								_0: 'OVER',
+								_1: {ctor: '[]'}
+							}
+						})),
+				_1: {ctor: '[]'}
+			}
+		});
 };
 var _user$project$View$viewWall = F2(
 	function (ratio, wall) {
@@ -13109,6 +13200,79 @@ var _user$project$View$viewBall = F2(
 			},
 			{ctor: '[]'});
 	});
+var _user$project$View$viewBarrel = F2(
+	function (ratio, barrelAngle) {
+		var gunPosition = _user$project$Bounds$gameX / 2;
+		var barrelWidth = 12;
+		return A2(
+			_elm_lang$svg$Svg$g,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$svg$Svg$rect,
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$class('gunbarrel'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$transform(
+								_user$project$SvgHelpers$tfm(
+									{
+										ctor: '::',
+										_0: A3(_user$project$SvgHelpers$Rotate, barrelAngle, gunPosition, 0.0),
+										_1: {ctor: '[]'}
+									})),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$x(
+									_elm_lang$core$Basics$toString(gunPosition)),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$y(
+										_elm_lang$core$Basics$toString(0.0 - (barrelWidth / 2))),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$width('40'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Attributes$height(
+												_elm_lang$core$Basics$toString(barrelWidth)),
+											_1: {ctor: '[]'}
+										}
+									}
+								}
+							}
+						}
+					},
+					{ctor: '[]'}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$svg$Svg$circle,
+						{
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$class('gunbase'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$cx(
+									_elm_lang$core$Basics$toString(gunPosition)),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$cy('0'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$r('30'),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						},
+						{ctor: '[]'}),
+					_1: {ctor: '[]'}
+				}
+			});
+	});
 var _user$project$View$viewBucket = function (bucket) {
 	return A2(
 		_elm_lang$svg$Svg$rect,
@@ -13138,6 +13302,62 @@ var _user$project$View$viewBucket = function (bucket) {
 		},
 		{ctor: '[]'});
 };
+var _user$project$View$viewScoreMarker = function (scoreMarker) {
+	var positionAtts = {
+		ctor: '::',
+		_0: _elm_lang$svg$Svg_Attributes$cx(
+			_user$project$View$getXStr(scoreMarker.position)),
+		_1: {
+			ctor: '::',
+			_0: _elm_lang$svg$Svg_Attributes$cy(
+				_user$project$View$getYStr(scoreMarker.position)),
+			_1: {ctor: '[]'}
+		}
+	};
+	var classAtt = _elm_lang$svg$Svg_Attributes$class('scoremarker');
+	return A2(
+		_elm_lang$svg$Svg$g,
+		{
+			ctor: '::',
+			_0: _elm_lang$svg$Svg_Attributes$transform(
+				_user$project$SvgHelpers$tfm(
+					{
+						ctor: '::',
+						_0: _user$project$SvgHelpers$translateVec2(scoreMarker.position),
+						_1: {ctor: '[]'}
+					})),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$svg$Svg_Attributes$opacity(
+					_elm_lang$core$Basics$toString(scoreMarker.opacity)),
+				_1: {ctor: '[]'}
+			}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$svg$Svg$text_,
+				{
+					ctor: '::',
+					_0: _elm_lang$svg$Svg_Attributes$class('bonus-popup'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$textAnchor('middle'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$dominantBaseline('middle'),
+							_1: {ctor: '[]'}
+						}
+					}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$svg$Svg$text(scoreMarker.text),
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
+		});
+};
 var _user$project$View$viewPeg = F2(
 	function (ratio, peg) {
 		var conditionalClasses = {
@@ -13161,8 +13381,8 @@ var _user$project$View$viewPeg = F2(
 			}
 		};
 		var pegTypeClass = function () {
-			var _p5 = peg.pegType;
-			switch (_p5.ctor) {
+			var _p4 = peg.pegType;
+			switch (_p4.ctor) {
 				case 'Red':
 					return 'redPeg';
 				case 'MultiBall':
@@ -13269,156 +13489,10 @@ var _user$project$View$concatIf = F3(
 			},
 			list) : list;
 	});
-var _user$project$View$Scale = function (a) {
-	return {ctor: 'Scale', _0: a};
-};
-var _user$project$View$Translate = F2(
-	function (a, b) {
-		return {ctor: 'Translate', _0: a, _1: b};
-	});
-var _user$project$View$translateVec2 = function (pos) {
-	return A2(
-		_user$project$View$Translate,
-		_elm_community$linear_algebra$Math_Vector2$getX(pos),
-		_elm_community$linear_algebra$Math_Vector2$getY(pos));
-};
-var _user$project$View$viewScoreMarker = function (scoreMarker) {
-	var positionAtts = {
-		ctor: '::',
-		_0: _elm_lang$svg$Svg_Attributes$cx(
-			_user$project$View$getXStr(scoreMarker.position)),
-		_1: {
-			ctor: '::',
-			_0: _elm_lang$svg$Svg_Attributes$cy(
-				_user$project$View$getYStr(scoreMarker.position)),
-			_1: {ctor: '[]'}
-		}
-	};
-	var classAtt = _elm_lang$svg$Svg_Attributes$class('scoremarker');
-	return A2(
-		_elm_lang$svg$Svg$g,
-		{
-			ctor: '::',
-			_0: _elm_lang$svg$Svg_Attributes$transform(
-				_user$project$View$tfm(
-					{
-						ctor: '::',
-						_0: _user$project$View$translateVec2(scoreMarker.position),
-						_1: {ctor: '[]'}
-					})),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$svg$Svg_Attributes$opacity(
-					_elm_lang$core$Basics$toString(scoreMarker.opacity)),
-				_1: {ctor: '[]'}
-			}
-		},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$svg$Svg$text_,
-				{
-					ctor: '::',
-					_0: _elm_lang$svg$Svg_Attributes$class('bonus-popup'),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$svg$Svg_Attributes$textAnchor('middle'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$svg$Svg_Attributes$dominantBaseline('middle'),
-							_1: {ctor: '[]'}
-						}
-					}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$svg$Svg$text(scoreMarker.text),
-					_1: {ctor: '[]'}
-				}),
-			_1: {ctor: '[]'}
-		});
-};
-var _user$project$View$Rotate = F3(
-	function (a, b, c) {
-		return {ctor: 'Rotate', _0: a, _1: b, _2: c};
-	});
-var _user$project$View$viewBarrel = F2(
-	function (ratio, barrelAngle) {
-		var gunPosition = _user$project$Bounds$gameX / 2;
-		var barrelWidth = 12;
-		return A2(
-			_elm_lang$svg$Svg$g,
-			{ctor: '[]'},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$svg$Svg$rect,
-					{
-						ctor: '::',
-						_0: _elm_lang$svg$Svg_Attributes$class('gunbarrel'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$svg$Svg_Attributes$transform(
-								_user$project$View$tfm(
-									{
-										ctor: '::',
-										_0: A3(_user$project$View$Rotate, barrelAngle, gunPosition, 0.0),
-										_1: {ctor: '[]'}
-									})),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$svg$Svg_Attributes$x(
-									_elm_lang$core$Basics$toString(gunPosition)),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$svg$Svg_Attributes$y(
-										_elm_lang$core$Basics$toString(0.0 - (barrelWidth / 2))),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$svg$Svg_Attributes$width('40'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$svg$Svg_Attributes$height(
-												_elm_lang$core$Basics$toString(barrelWidth)),
-											_1: {ctor: '[]'}
-										}
-									}
-								}
-							}
-						}
-					},
-					{ctor: '[]'}),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$svg$Svg$circle,
-						{
-							ctor: '::',
-							_0: _elm_lang$svg$Svg_Attributes$class('gunbase'),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$svg$Svg_Attributes$cx(
-									_elm_lang$core$Basics$toString(gunPosition)),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$svg$Svg_Attributes$cy('0'),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$svg$Svg_Attributes$r('30'),
-										_1: {ctor: '[]'}
-									}
-								}
-							}
-						},
-						{ctor: '[]'}),
-					_1: {ctor: '[]'}
-				}
-			});
-	});
 var _user$project$View$viewPlayArea = function (model) {
-	var _p6 = A2(_user$project$View$gameDimensions, model.windowWidth, model.windowHeight);
-	var gameDimAttrib = _p6._0;
-	var ratio = _p6._1;
+	var _p5 = A2(_user$project$View$gameDimensions, model.windowWidth, model.windowHeight);
+	var gameDimAttrib = _p5._0;
+	var ratio = _p5._1;
 	var svgBackground = A2(
 		_elm_lang$svg$Svg$rect,
 		{

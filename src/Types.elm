@@ -70,13 +70,14 @@ type GameState
     | SweepingUp
     | GameOver
 
-
+type BarrelMoveDirection = Right | Left
 
 
 
 type alias Model =
     { gameState : GameState
     , barrelAngle : Float
+    , barrelMoveDirection : BarrelMoveDirection
     , score : Int
     , ballsLeft : Int
     , remainingLevels : List LevelDef
