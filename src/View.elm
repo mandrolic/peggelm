@@ -12,6 +12,8 @@ import Svg.Events exposing (..)
 import Types exposing (..)
 import VectorHelpers exposing (..)
 import SvgHelpers exposing (..)
+
+
 --import Mouse exposing (Position)
 
 
@@ -51,112 +53,134 @@ viewPlayArea model =
                 [ [ svgBackground ]
                 , List.map (viewWall ratio) model.walls
                 , List.map (viewPeg ratio) model.pegs
-                ,  List.map (viewBall ratio) model.balls
+                , List.map (viewBall ratio) model.balls
                 , [ viewBarrel ratio model.barrelAngle ]
                 , [ viewBucket model.bucket ]
                 , List.map viewScoreMarker model.scoreMarkers
-                , concatIf (model.gameState == GameOver ) (svgGameOver ratio) [ svgScore model.score, svgBallsLeft model.ballsLeft  ]
+                , concatIf (model.gameState == GameOver) (svgGameOver ratio)
+                    [ svgScore ratio model.score model.pegs model.redPegTargetForCurrentLevel
+                      , svgBallsLeft model.ballsLeft
+                    ]
                 ]
-
 
 
 concatIf : Bool -> a -> List a -> List a
 concatIf predicate item list =
-  if predicate
-    then List.append [item] list
-    else list
+    if predicate then
+        List.append [ item ] list
+    else
+        list
+
 
 viewPeg : Float -> Peg -> Svg Msg
 viewPeg ratio peg =
     let
+        pegTypeClass =
+            case peg.pegType of
+                Red ->
+                    "redPeg"
 
-      pegTypeClass = case peg.pegType of
-          Red -> "redPeg"
-          MultiBall -> "multiBallPeg"
-          _ -> ""
+                MultiBall ->
+                    "multiBallPeg"
 
-      staticAtts =   [
-         cx (peg.position |> getXStr)
-        , cy (peg.position |> getYStr)
-        ]
+                _ ->
+                    ""
 
-      conditionalClasses  = [  (peg.hitCount > 0, "hit") ]
+        staticAtts =
+            [ cx (peg.position |> getXStr)
+            , cy (peg.position |> getYStr)
+            ]
 
-      classAtt = class <| "peg " ++  pegTypeClass ++ " " ++ (join " "  (conditionalClasses |> List.filter Tuple.first |> List.map Tuple.second))
+        conditionalClasses =
+            [ ( peg.hitCount > 0, "hit" ) ]
 
-      createCircle radius hitCount =
-          Svg.circle ( (r <| toString <| radius) :: classAtt :: staticAtts) []
-
+        classAtt =
+            class <| "peg " ++ pegTypeClass ++ " " ++ (join " " (conditionalClasses |> List.filter Tuple.first |> List.map Tuple.second))
     in
-        Svg.g [] [
-          -- main outer circle
-          Svg.circle ( ( r (toString peg.radius)) :: classAtt :: staticAtts ) []
-          , Svg.text_
-              [ class "score-text"
-              , opacity (toString (if peg.scoreDisplayTimeLeft > 0 then 1 else 0))
-              , textAnchor "middle"
-              , dominantBaseline "middle"
-              , y (getYStr (addY 16 peg.position))
-              , x (getXStr peg.position)
+        Svg.g []
+            [ -- peg
+              Svg.circle ((r (toString peg.radius)) :: classAtt :: staticAtts) []
+              -- score marker (when present)
+            , Svg.text_
+                [ class "score-text"
+                , opacity
+                    (toString
+                        (if peg.scoreDisplayTimeLeft > 0 then
+                            1
+                         else
+                            0
+                        )
+                    )
+                , textAnchor "middle"
+                , dominantBaseline "middle"
+                , y (getYStr (addY 16 peg.position))
+                , x (getXStr peg.position)
+                ]
+                [ Svg.text (toString peg.scoreLastHit) ]
+            ]
 
-              ]
-            [ Svg.text (toString peg.scoreLastHit ) ]
-        ]
 
 viewScoreMarker : ScoreMarker -> Svg Msg
 viewScoreMarker scoreMarker =
-  let
-    classAtt = class "scoremarker"
+    let
+        classAtt =
+            class "scoremarker"
 
-    positionAtts = [
-       cx (scoreMarker.position |> getXStr)
-      , cy (scoreMarker.position |> getYStr)
-      ]
-  in
-    Svg.g [
-       transform  (tfm [ (translateVec2 scoreMarker.position) ])
-       , opacity <| toString <| scoreMarker.opacity
-    ]  [
-     --Svg.circle ([ ( r (toString scoreMarker.radius)), classAtt ] ) []
-      Svg.text_
-          [ class "bonus-popup", textAnchor "middle", dominantBaseline "middle" ]
-        [ Svg.text scoreMarker.text ]
-    ]
+        positionAtts =
+            [ cx (scoreMarker.position |> getXStr)
+            , cy (scoreMarker.position |> getYStr)
+            ]
+    in
+        Svg.g
+            [ transform (tfm [ (translateVec2 scoreMarker.position) ])
+            , opacity <| toString <| scoreMarker.opacity
+            ]
+            [ --Svg.circle ([ ( r (toString scoreMarker.radius)), classAtt ] ) []
+              Svg.text_
+                [ class "bonus-popup", textAnchor "middle", dominantBaseline "middle" ]
+                [ Svg.text scoreMarker.text ]
+            ]
 
 
-
-viewBucket :  Bucket -> Svg Msg
+viewBucket : Bucket -> Svg Msg
 viewBucket bucket =
-    Svg.rect [ class "bucket"
-      , x <| toString <| bucket.xOffset
-      , y <| toString <| Bounds.gameY - 5
-      , width <| toString <| bucket.width
-      , height "5"
-      ] []
+    Svg.rect
+        [ class "bucket"
+        , x <| toString <| bucket.xOffset
+        , y <| toString <| Bounds.gameY - 5
+        , width <| toString <| bucket.width
+        , height "5"
+        ]
+        []
+
 
 viewBarrel : Float -> Float -> Svg Msg
 viewBarrel ratio barrelAngle =
     let
-      barrelWidth = 12
-      gunPosition = Bounds.gameX / 2
-    in
-      Svg.g [] [
+        barrelWidth =
+            12
 
-         Svg.rect [ class "gunbarrel"
-          , transform  (tfm [ Rotate barrelAngle gunPosition 0.0 ])
-          , x (toString gunPosition)
-          , y (toString (0.0 - (barrelWidth / 2)))
-          , width "40"
-          , height (toString barrelWidth)
-          ] []
-          ,  Svg.circle
+        gunPosition =
+            Bounds.gameX / 2
+    in
+        Svg.g []
+            [ Svg.rect
+                [ class "gunbarrel"
+                , transform (tfm [ Rotate barrelAngle gunPosition 0.0 ])
+                , x (toString gunPosition)
+                , y (toString (0.0 - (barrelWidth / 2)))
+                , width "40"
+                , height (toString barrelWidth)
+                ]
+                []
+            , Svg.circle
                 [ class "gunbase"
                 , cx (toString gunPosition)
                 , cy "0"
                 , r "30"
                 ]
                 []
-        ]
+            ]
 
 
 viewBall : Float -> Ball -> Svg Msg
@@ -196,20 +220,49 @@ svgGameTextLine text =
             [ Svg.text text ]
 
 
-svgScore : Int -> Svg a
-svgScore score =
-    Svg.text_
-        [ y "0"
-        , class "game-text"
-        ]
-        [ Svg.tspan
-            [ dy "30" -- <-- AR: what this do?
-            , x "10"
-            , textAnchor "start"
+svgScore : Float -> Int -> List Peg -> Int -> Svg a
+svgScore ratio score pegs requiredRedPegs =
+  let
+    redPegsRemaining = pegs |> List.filter (\p -> p.pegType == Red) |> List.length
+    redPegsHit = requiredRedPegs - redPegsRemaining
 
+    mainScore =   Svg.text_
+          [ y "0"
+          , class "game-text"
+          ]
+          [ Svg.tspan
+              [ dy "30"
+              , x "10"
+              , textAnchor "start"
+              ]
+              [ Svg.text <| "Score: " ++ (toString score) ]
+         ]
+
+    coinsNeeded = Svg.text_
+          [ y "0"
+          , class "game-text"
+          ]
+          [
+          Svg.tspan
+            [ dy "10"
+            , x "25"
+            , textAnchor "start"
+            , fontSize "16"
             ]
-            [ Svg.text <| "Score: " ++ (toString score) ]
+            [ Svg.text <| (toString redPegsHit) ++  " of " ++ (toString requiredRedPegs) ]
+          ]
+
+    coin = Svg.circle [ r "6",  class "peg redPeg",  cx "15", cy "5"] []
+  in
+    Svg.g []
+    [
+      mainScore
+      , Svg.g [  transform (tfm [ Translate 0 40 ]) ]
+        [
+        coin
+        ,coinsNeeded
         ]
+    ]
 
 svgBallsLeft : Int -> Svg a
 svgBallsLeft ballsLeft =
@@ -218,7 +271,8 @@ svgBallsLeft ballsLeft =
         , class "game-text"
         ]
         [ Svg.tspan
-            [ dy "30" -- <-- AR: what this do?
+            [ dy "30"
+              -- <-- AR: what this do?
             , x <| toString (Bounds.gameX - 10)
             , textAnchor "end"
             ]
@@ -228,35 +282,31 @@ svgBallsLeft ballsLeft =
 
 svgGameOver : Float -> Svg Msg
 svgGameOver backgroundTextOpacity =
-   let
-      rectWidth = 200
-      rectLeft = (Bounds.gameX - rectWidth) / 2
-   in
-     Svg.g [
-       --transform  (tfm [ (Translate rectLeft 0) ])
-     ] [
-       rect
-           [
-            Svg.Attributes.fill  "black"
-           , fillOpacity  "0.9"
-           , width (toString Bounds.gameX)
-           , height (toString Bounds.gameY)
-           , Svg.Events.onClick PlayAgain
-           ][]
-        ,
-        Svg.text_
-         [
-          class "game-text"
-          , y (toString ((Bounds.gameY / 2) - 60))
-         , strokeOpacity (toString backgroundTextOpacity)
-         ]
-           (
-              List.map svgGameTextLine [ "GAME", "OVER" ]
-            )
-      ]
+    let
+        rectWidth =
+            200
 
-
-
+        rectLeft =
+            (Bounds.gameX - rectWidth) / 2
+    in
+        Svg.g
+            [--transform  (tfm [ (Translate rectLeft 0) ])
+            ]
+            [ rect
+                [ Svg.Attributes.fill "black"
+                , fillOpacity "0.9"
+                , width (toString Bounds.gameX)
+                , height (toString Bounds.gameY)
+                , Svg.Events.onClick PlayAgain
+                ]
+                []
+            , Svg.text_
+                [ class "game-text"
+                , y (toString ((Bounds.gameY / 2) - 60))
+                , strokeOpacity (toString backgroundTextOpacity)
+                ]
+                (List.map svgGameTextLine [ "GAME", "OVER" ])
+            ]
 
 
 gameDimensions : Int -> Int -> ( Svg.Attribute msg, Float )
@@ -293,8 +343,6 @@ getYStr =
     getY >> toString
 
 
-
-
 getClickPos : Json.Decoder ( Int, Int )
 getClickPos =
     Json.map2 (,)
@@ -314,14 +362,16 @@ getCoords : Float -> ( Int, Int, Int ) -> Vec2
 getCoords ratio ( x, y, buttons ) =
     Math.Vector2.fromTuple ( (toFloat x / ratio), (toFloat y / ratio) )
 
+
 decodeUserMouseMoveMsg : Float -> Json.Decoder Msg
 decodeUserMouseMoveMsg ratio =
     getClickPosWithButtons
-      |> Json.map (getCoords ratio)
-      |> Json.map  MouseMoved
+        |> Json.map (getCoords ratio)
+        |> Json.map MouseMoved
+
 
 decodeUserClickedMsg : Float -> Json.Decoder Msg
 decodeUserClickedMsg ratio =
     getClickPosWithButtons
-      |> Json.map (getCoords ratio)
-      |> Json.map  UserClicked
+        |> Json.map (getCoords ratio)
+        |> Json.map UserClicked

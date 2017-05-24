@@ -84,6 +84,7 @@ type alias Model =
     , paused : Bool
     , balls : List Ball
     , pegs : List Peg
+    , redPegTargetForCurrentLevel : Int
     , walls : List VerticalWall
     , scoreMarkers : List ScoreMarker
     , bucket : Bucket

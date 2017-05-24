@@ -69,11 +69,13 @@ velocityLens =
     compose physicsLens physVelocityLens
 
 
+
 resetToLevel : LevelDef -> Model -> Model
 resetToLevel ls model =
     { model
         | walls = ls.walls
         , pegs = ls.pegs
+        , redPegTargetForCurrentLevel = ls.pegs |> List.filter (\p -> p.pegType == Red)  |> List.length
         , gameState = Aiming
         , balls = []
         , scoreMarkers = []
@@ -87,6 +89,7 @@ initial =
     , ballsLeft = 0
     , balls = []
     , pegs = []
+    , redPegTargetForCurrentLevel = 0
     , scoreMarkers = []
     , walls = []
     , bucket = { xOffset = 0, width = 100.0, direction = 1.0 }

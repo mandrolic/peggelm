@@ -11706,7 +11706,9 @@ var _user$project$Types$Model = function (a) {
 											return function (l) {
 												return function (m) {
 													return function (n) {
-														return {gameState: a, barrelAngle: b, barrelMoveDirection: c, score: d, ballsLeft: e, remainingLevels: f, paused: g, balls: h, pegs: i, walls: j, scoreMarkers: k, bucket: l, windowWidth: m, windowHeight: n};
+														return function (o) {
+															return {gameState: a, barrelAngle: b, barrelMoveDirection: c, score: d, ballsLeft: e, remainingLevels: f, paused: g, balls: h, pegs: i, redPegTargetForCurrentLevel: j, walls: k, scoreMarkers: l, bucket: m, windowWidth: n, windowHeight: o};
+														};
 													};
 												};
 											};
@@ -12358,6 +12360,13 @@ var _user$project$Model$resetToLevel = F2(
 			{
 				walls: ls.walls,
 				pegs: ls.pegs,
+				redPegTargetForCurrentLevel: _elm_lang$core$List$length(
+					A2(
+						_elm_lang$core$List$filter,
+						function (p) {
+							return _elm_lang$core$Native_Utils.eq(p.pegType, _user$project$Types$Red);
+						},
+						ls.pegs)),
 				gameState: _user$project$Types$Aiming,
 				balls: {ctor: '[]'},
 				scoreMarkers: {ctor: '[]'},
@@ -12372,6 +12381,7 @@ var _user$project$Model$initial = A2(
 		ballsLeft: 0,
 		balls: {ctor: '[]'},
 		pegs: {ctor: '[]'},
+		redPegTargetForCurrentLevel: 0,
 		scoreMarkers: {ctor: '[]'},
 		walls: {ctor: '[]'},
 		bucket: {xOffset: 0, width: 100.0, direction: 1.0},
@@ -13010,47 +13020,155 @@ var _user$project$View$svgBallsLeft = function (ballsLeft) {
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$View$svgScore = function (score) {
-	return A2(
-		_elm_lang$svg$Svg$text_,
-		{
-			ctor: '::',
-			_0: _elm_lang$svg$Svg_Attributes$y('0'),
-			_1: {
+var _user$project$View$svgScore = F4(
+	function (ratio, score, pegs, requiredRedPegs) {
+		var coin = A2(
+			_elm_lang$svg$Svg$circle,
+			{
 				ctor: '::',
-				_0: _elm_lang$svg$Svg_Attributes$class('game-text'),
-				_1: {ctor: '[]'}
-			}
-		},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$svg$Svg$tspan,
-				{
+				_0: _elm_lang$svg$Svg_Attributes$r('6'),
+				_1: {
 					ctor: '::',
-					_0: _elm_lang$svg$Svg_Attributes$dy('30'),
+					_0: _elm_lang$svg$Svg_Attributes$class('peg redPeg'),
 					_1: {
 						ctor: '::',
-						_0: _elm_lang$svg$Svg_Attributes$x('10'),
+						_0: _elm_lang$svg$Svg_Attributes$cx('15'),
 						_1: {
 							ctor: '::',
-							_0: _elm_lang$svg$Svg_Attributes$textAnchor('start'),
+							_0: _elm_lang$svg$Svg_Attributes$cy('5'),
 							_1: {ctor: '[]'}
 						}
 					}
-				},
-				{
+				}
+			},
+			{ctor: '[]'});
+		var mainScore = A2(
+			_elm_lang$svg$Svg$text_,
+			{
+				ctor: '::',
+				_0: _elm_lang$svg$Svg_Attributes$y('0'),
+				_1: {
 					ctor: '::',
-					_0: _elm_lang$svg$Svg$text(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'Score: ',
-							_elm_lang$core$Basics$toString(score))),
+					_0: _elm_lang$svg$Svg_Attributes$class('game-text'),
 					_1: {ctor: '[]'}
-				}),
-			_1: {ctor: '[]'}
-		});
-};
+				}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$svg$Svg$tspan,
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$dy('30'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$x('10'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$textAnchor('start'),
+								_1: {ctor: '[]'}
+							}
+						}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg$text(
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'Score: ',
+								_elm_lang$core$Basics$toString(score))),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			});
+		var redPegsRemaining = _elm_lang$core$List$length(
+			A2(
+				_elm_lang$core$List$filter,
+				function (p) {
+					return _elm_lang$core$Native_Utils.eq(p.pegType, _user$project$Types$Red);
+				},
+				pegs));
+		var redPegsHit = requiredRedPegs - redPegsRemaining;
+		var coinsNeeded = A2(
+			_elm_lang$svg$Svg$text_,
+			{
+				ctor: '::',
+				_0: _elm_lang$svg$Svg_Attributes$y('0'),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$svg$Svg_Attributes$class('game-text'),
+					_1: {ctor: '[]'}
+				}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$svg$Svg$tspan,
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$dy('10'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$x('25'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$textAnchor('start'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$fontSize('16'),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg$text(
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								_elm_lang$core$Basics$toString(redPegsHit),
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									' of ',
+									_elm_lang$core$Basics$toString(requiredRedPegs)))),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			});
+		return A2(
+			_elm_lang$svg$Svg$g,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: mainScore,
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$svg$Svg$g,
+						{
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$transform(
+								_user$project$SvgHelpers$tfm(
+									{
+										ctor: '::',
+										_0: A2(_user$project$SvgHelpers$Translate, 0, 40),
+										_1: {ctor: '[]'}
+									})),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: coin,
+							_1: {
+								ctor: '::',
+								_0: coinsNeeded,
+								_1: {ctor: '[]'}
+							}
+						}),
+					_1: {ctor: '[]'}
+				}
+			});
+	});
 var _user$project$View$svgGameTextLine = function (text) {
 	var screenCentre = _elm_lang$core$Basics$toString(_user$project$Bounds$gameX / 2);
 	return A2(
@@ -13408,18 +13526,6 @@ var _user$project$View$viewPeg = F2(
 								_elm_lang$core$List$map,
 								_elm_lang$core$Tuple$second,
 								A2(_elm_lang$core$List$filter, _elm_lang$core$Tuple$first, conditionalClasses)))))));
-		var createCircle = F2(
-			function (radius, hitCount) {
-				return A2(
-					_elm_lang$svg$Svg$circle,
-					{
-						ctor: '::',
-						_0: _elm_lang$svg$Svg_Attributes$r(
-							_elm_lang$core$Basics$toString(radius)),
-						_1: {ctor: '::', _0: classAtt, _1: staticAtts}
-					},
-					{ctor: '[]'});
-			});
 		return A2(
 			_elm_lang$svg$Svg$g,
 			{ctor: '[]'},
@@ -13599,7 +13705,7 @@ var _user$project$View$viewPlayArea = function (model) {
 												_user$project$View$svgGameOver(ratio),
 												{
 													ctor: '::',
-													_0: _user$project$View$svgScore(model.score),
+													_0: A4(_user$project$View$svgScore, ratio, model.score, model.pegs, model.redPegTargetForCurrentLevel),
 													_1: {
 														ctor: '::',
 														_0: _user$project$View$svgBallsLeft(model.ballsLeft),
