@@ -1,4 +1,4 @@
-module Levels exposing (allLevels, initialiseLevel1)
+module Levels exposing (remainingLevels, initialLevel)
 
 import Bounds
 import Math.Vector2 exposing (..)
@@ -74,8 +74,8 @@ hLineOffPegs count spacing =
 
 
 
-initialiseLevel1 : LevelDef
-initialiseLevel1 =
+staggered : LevelDef
+staggered =
   let
     lineOfPegs = hLineOffPegs 8 50
   in
@@ -100,9 +100,9 @@ circleMultiBallLevel =
             List.concat
                 [ circlePegs (Bounds.gameX / 2) 200.0 75.0 16 |> List.indexedMap makeRedIfEven
                 , [ initialPeg (Bounds.gameX / 2) 200 ] |> List.map (\peg -> { peg | pegType = MultiBall })
-                , hLineOffPegs 9 40 |> addPegYs 320.0
-                , hLineOffPegs 8 40 |> addPegXs 20.0 |> addPegYs 360.0 |> List.map setRed
-                , hLineOffPegs 9 40 |> addPegYs 400.0
+                , hLineOffPegs 9 40 |> addPegXs 80 |> addPegYs 320.0
+                , hLineOffPegs 8 40 |> addPegXs 100 |> addPegYs 360.0 |> List.map setRed
+                , hLineOffPegs 9 40 |> addPegXs 80 |> addPegYs 400.0
                 ]
         , walls = sideWalls
         }
@@ -197,6 +197,12 @@ veeLevel =
         }
 
 
-allLevels : List LevelDef
-allLevels =
+
+
+initialLevel : LevelDef
+initialLevel = staggered
+
+
+remainingLevels : List LevelDef
+remainingLevels =
     [ veeLevel, pyramidLevel, circleMultiBallLevel, bewbsLevel ]

@@ -96,12 +96,12 @@ initial =
     , barrelAngle = 45.0
     , barrelMoveDirection = Right
     , gameState = Aiming
-    , remainingLevels = Levels.allLevels
+    , remainingLevels = Levels.remainingLevels
     , paused = False
     , windowWidth = 16
     , windowHeight = 16
     }
-        |> resetToLevel initialiseLevel1
+        |> resetToLevel Levels.initialLevel
 
 
 
@@ -259,8 +259,8 @@ gotoNextLevel model =
             { model | remainingLevels = levelsRemaining } |> resetToLevel nextLevel
 
         [] ->
-            -- HACK - run out of levels
-            model |> resetToLevel initialiseLevel1
+            -- HACK - run out of levels - back to the first. Need more levels...
+            model |> resetToLevel initialLevel
 
 
 {-| Called whhen all the hit pegs have been swept

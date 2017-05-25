@@ -11915,7 +11915,7 @@ var _user$project$Levels$addPegXs = function (_p3) {
 	return _elm_lang$core$List$map(
 		_user$project$Levels$addPegX(_p3));
 };
-var _user$project$Levels$initialiseLevel1 = function () {
+var _user$project$Levels$staggered = function () {
 	var lineOfPegs = A2(_user$project$Levels$hLineOffPegs, 8, 50);
 	return {
 		pegs: _elm_lang$core$List$concat(
@@ -11964,6 +11964,7 @@ var _user$project$Levels$initialiseLevel1 = function () {
 		walls: _user$project$Levels$sideWalls
 	};
 }();
+var _user$project$Levels$initialLevel = _user$project$Levels$staggered;
 var _user$project$Levels$circleMultiBallLevel = function () {
 	var makeRedIfEven = _user$project$Levels$setRedIf(
 		function (i) {
@@ -11998,7 +11999,10 @@ var _user$project$Levels$circleMultiBallLevel = function () {
 						_0: A2(
 							_user$project$Levels$addPegYs,
 							320.0,
-							A2(_user$project$Levels$hLineOffPegs, 9, 40)),
+							A2(
+								_user$project$Levels$addPegXs,
+								80,
+								A2(_user$project$Levels$hLineOffPegs, 9, 40))),
 						_1: {
 							ctor: '::',
 							_0: A2(
@@ -12009,14 +12013,17 @@ var _user$project$Levels$circleMultiBallLevel = function () {
 									360.0,
 									A2(
 										_user$project$Levels$addPegXs,
-										20.0,
+										100,
 										A2(_user$project$Levels$hLineOffPegs, 8, 40)))),
 							_1: {
 								ctor: '::',
 								_0: A2(
 									_user$project$Levels$addPegYs,
 									400.0,
-									A2(_user$project$Levels$hLineOffPegs, 9, 40)),
+									A2(
+										_user$project$Levels$addPegXs,
+										80,
+										A2(_user$project$Levels$hLineOffPegs, 9, 40))),
 								_1: {ctor: '[]'}
 							}
 						}
@@ -12091,7 +12098,7 @@ var _user$project$Levels$veeLevel = function () {
 				A2(_elm_lang$core$List$range, 1, 7))));
 	return {pegs: pegs_, walls: _user$project$Levels$sideWalls};
 }();
-var _user$project$Levels$allLevels = {
+var _user$project$Levels$remainingLevels = {
 	ctor: '::',
 	_0: _user$project$Levels$veeLevel,
 	_1: {
@@ -12375,7 +12382,7 @@ var _user$project$Model$resetToLevel = F2(
 	});
 var _user$project$Model$initial = A2(
 	_user$project$Model$resetToLevel,
-	_user$project$Levels$initialiseLevel1,
+	_user$project$Levels$initialLevel,
 	{
 		score: 0,
 		ballsLeft: 0,
@@ -12388,7 +12395,7 @@ var _user$project$Model$initial = A2(
 		barrelAngle: 45.0,
 		barrelMoveDirection: _user$project$Types$Right,
 		gameState: _user$project$Types$Aiming,
-		remainingLevels: _user$project$Levels$allLevels,
+		remainingLevels: _user$project$Levels$remainingLevels,
 		paused: false,
 		windowWidth: 16,
 		windowHeight: 16
@@ -12403,7 +12410,7 @@ var _user$project$Model$gotoNextLevel = function (model) {
 				model,
 				{remainingLevels: _p0._1}));
 	} else {
-		return A2(_user$project$Model$resetToLevel, _user$project$Levels$initialiseLevel1, model);
+		return A2(_user$project$Model$resetToLevel, _user$project$Levels$initialLevel, model);
 	}
 };
 var _user$project$Model$endSweep = function (model) {
