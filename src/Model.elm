@@ -126,9 +126,12 @@ update action model =
             case (model.gameState) of
                 Aiming ->
                     case action of
-                        UserClicked location ->
-                            ( startBallInPlay location model, Cmd.none )
 
+                        UserClicked location ->
+                            ( startBallInPlay  model, Cmd.none )
+
+                        KeyDown 32 ->
+                            ( startBallInPlay  model, Cmd.none )
                         --      MouseMoved location ->
                         --            ( adjustBarrelAim location model, Cmd.none )
                         _ ->
@@ -225,8 +228,8 @@ initialBall =
     }
 
 
-startBallInPlay : Vec2 -> Model -> Model
-startBallInPlay clickedPosition model =
+startBallInPlay :  Model -> Model
+startBallInPlay  model =
     let
         gunpos =
             vec2 (Bounds.gameX / 2) 0.0

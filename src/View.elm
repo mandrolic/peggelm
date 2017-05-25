@@ -238,7 +238,7 @@ svgScore ratio score pegs requiredRedPegs =
               [ Svg.text <| "Score: " ++ (toString score) ]
          ]
 
-    coinsNeeded = Svg.text_
+    pegsNeeded = Svg.text_
           [ y "0"
           , class "game-text"
           ]
@@ -252,15 +252,15 @@ svgScore ratio score pegs requiredRedPegs =
             [ Svg.text <| (toString redPegsHit) ++  " of " ++ (toString requiredRedPegs) ]
           ]
 
-    coin = Svg.circle [ r "6",  class "peg redPeg",  cx "15", cy "5"] []
+    examplePeg = Svg.circle [ r "6",  class "peg redPeg",  cx "15", cy "5"] []
   in
     Svg.g []
     [
       mainScore
       , Svg.g [  transform (tfm [ Translate 0 40 ]) ]
         [
-        coin
-        ,coinsNeeded
+        examplePeg
+        ,pegsNeeded
         ]
     ]
 

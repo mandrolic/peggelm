@@ -12695,34 +12695,33 @@ var _user$project$Model$tickModel = F2(
 		};
 	});
 var _user$project$Model$launchSpeed = 0.5;
-var _user$project$Model$startBallInPlay = F2(
-	function (clickedPosition, model) {
-		var launchVector = A2(_user$project$VectorHelpers$vec2FromPolar, _user$project$Model$launchSpeed, model.barrelAngle);
-		var gunpos = A2(_elm_community$linear_algebra$Math_Vector2$vec2, _user$project$Bounds$gameX / 2, 0.0);
-		var barrelTip = A2(
-			_elm_community$linear_algebra$Math_Vector2$add,
-			gunpos,
-			A2(_user$project$VectorHelpers$vec2FromPolar, 40.0, model.barrelAngle));
-		var launchedBall = function (b) {
-			return _elm_lang$core$Native_Utils.update(
-				b,
-				{lastHitLocation: barrelTip});
-		}(
-			A2(
-				_user$project$Model$positionLens.set,
-				barrelTip,
-				A2(_user$project$Model$velocityLens.set, launchVector, _user$project$Model$initialBall)));
+var _user$project$Model$startBallInPlay = function (model) {
+	var launchVector = A2(_user$project$VectorHelpers$vec2FromPolar, _user$project$Model$launchSpeed, model.barrelAngle);
+	var gunpos = A2(_elm_community$linear_algebra$Math_Vector2$vec2, _user$project$Bounds$gameX / 2, 0.0);
+	var barrelTip = A2(
+		_elm_community$linear_algebra$Math_Vector2$add,
+		gunpos,
+		A2(_user$project$VectorHelpers$vec2FromPolar, 40.0, model.barrelAngle));
+	var launchedBall = function (b) {
 		return _elm_lang$core$Native_Utils.update(
-			model,
-			{
-				gameState: _user$project$Types$BallInPlay,
-				balls: {
-					ctor: '::',
-					_0: launchedBall,
-					_1: {ctor: '[]'}
-				}
-			});
-	});
+			b,
+			{lastHitLocation: barrelTip});
+	}(
+		A2(
+			_user$project$Model$positionLens.set,
+			barrelTip,
+			A2(_user$project$Model$velocityLens.set, launchVector, _user$project$Model$initialBall)));
+	return _elm_lang$core$Native_Utils.update(
+		model,
+		{
+			gameState: _user$project$Types$BallInPlay,
+			balls: {
+				ctor: '::',
+				_0: launchedBall,
+				_1: {ctor: '[]'}
+			}
+		});
+};
 var _user$project$Model$update = F2(
 	function (action, model) {
 		var _p9 = action;
@@ -12736,15 +12735,30 @@ var _user$project$Model$update = F2(
 				switch (_p10.ctor) {
 					case 'Aiming':
 						var _p11 = action;
-						if (_p11.ctor === 'UserClicked') {
-							return {
-								ctor: '_Tuple2',
-								_0: A2(_user$project$Model$startBallInPlay, _p11._0, model),
-								_1: _elm_lang$core$Platform_Cmd$none
-							};
-						} else {
-							return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-						}
+						_v8_2:
+						do {
+							switch (_p11.ctor) {
+								case 'UserClicked':
+									return {
+										ctor: '_Tuple2',
+										_0: _user$project$Model$startBallInPlay(model),
+										_1: _elm_lang$core$Platform_Cmd$none
+									};
+								case 'KeyDown':
+									if (_p11._0 === 32) {
+										return {
+											ctor: '_Tuple2',
+											_0: _user$project$Model$startBallInPlay(model),
+											_1: _elm_lang$core$Platform_Cmd$none
+										};
+									} else {
+										break _v8_2;
+									}
+								default:
+									break _v8_2;
+							}
+						} while(false);
+						return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 					case 'BallInPlay':
 						var _p12 = action;
 						if (_p12.ctor === 'KeyDown') {
@@ -13022,7 +13036,7 @@ var _user$project$View$svgBallsLeft = function (ballsLeft) {
 };
 var _user$project$View$svgScore = F4(
 	function (ratio, score, pegs, requiredRedPegs) {
-		var coin = A2(
+		var examplePeg = A2(
 			_elm_lang$svg$Svg$circle,
 			{
 				ctor: '::',
@@ -13089,7 +13103,7 @@ var _user$project$View$svgScore = F4(
 				},
 				pegs));
 		var redPegsHit = requiredRedPegs - redPegsRemaining;
-		var coinsNeeded = A2(
+		var pegsNeeded = A2(
 			_elm_lang$svg$Svg$text_,
 			{
 				ctor: '::',
@@ -13158,10 +13172,10 @@ var _user$project$View$svgScore = F4(
 						},
 						{
 							ctor: '::',
-							_0: coin,
+							_0: examplePeg,
 							_1: {
 								ctor: '::',
-								_0: coinsNeeded,
+								_0: pegsNeeded,
 								_1: {ctor: '[]'}
 							}
 						}),
